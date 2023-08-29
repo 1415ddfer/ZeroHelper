@@ -1,0 +1,45 @@
+{
+  "time": "Tue May 30 03:14:24 2023",
+  "pluginAcc": {"user": null, "pwd": null},
+  "lastTeamIndex": 0,
+  "teamAcc": [
+    {
+      "name": "队伍1",
+      "member": [
+        {
+          "nickName": "示范账号",
+          "user": "test",
+          "pwd": "test",
+          "providerId": 0,
+          "serverId": "179"
+        }
+      ]
+    }
+  ],
+  "serverList": {
+    "time": "Tue May 30 03:14:24 2023",
+    "Services": [
+      {
+        "name": "4399游戏",
+        "nick": "43",
+        "postUrl": "http://ptlogin.4399.com/ptlogin/login.do?v=1",
+        "loginBody": "loginFrom=uframe&postLoginHandler=default&layoutSelfAdapting=true&externalLogin=qq&displayMode=popup&layout=vertical&appId=www_home&mainDivId=popup_login_div&includeFcmInfo=false&userNameLabel=4399用户名&userNameTip=请输入4399用户名&welcomeTip=欢迎回到4399&username=%1&password=%2",
+        "gameUrl": "http://web.4399.com/stat/togame.php?target=ddt&server_id=S%1"
+      },
+      {
+        "name": "7k7k游戏",
+        "nick": "7k",
+        "postUrl": "http://zc.7k7k.com/post_login",
+        "loginBody": "username=%1&password=%2&rf=http://www.7k7k.com/#bottom",
+        "gameUrl": "http://web.7k7k.com/games/togame.php?target=ddt_7&server_id=%1"
+      },
+      {
+        "name": "清扬10.8",
+        "nick": "清",
+        "postUrl": "http://zc.7k7k.com/post_login",
+        "loginBody": "username=%1&password=%2",
+        "gameUrl": "http://web.7k7k.com/games/togame.php?target=ddt_7&server_id=1"
+      }
+    ]
+  }
+}
