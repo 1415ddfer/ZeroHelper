@@ -1,0 +1,25 @@
+<RCC>
+  <qresource prefix="background">
+    <file>res/1.png</file>
+    <file>res/2.png</file>
+    <file>res/21.png</file>
+    <file>res/24.png</file>
+    <file>res/61.png</file>
+  </qresource>
+  <qresource prefix="button">
+    <file>res/btn_close1.png</file>
+    <file>res/btn_mini1.png</file>
+    <file>res/player_ico.png</file>
+    <file>res/player_ico1.png</file>
+    <file>res/25.png</file>
+    <file>res/4.png</file>
+    <file>res/5.png</file>
+  </qresource>
+  <qresource prefix="data">
+    <file>res/defaultUserData.json</file>
+  </qresource>
+<!--  <qresource prefix="plugin">-->
+<!--    <file>plugin/normal.exe</file>-->
+<!--    <file>plugin/debug.exe</file>-->
+<!--  </qresource>-->
+</RCC>
