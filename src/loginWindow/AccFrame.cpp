@@ -240,7 +240,6 @@ void MemberBtn::mouseReleaseEvent(QMouseEvent *e) {
     auto loc = geometry();
     move(loc.x() - 3, loc.y() - 3);
     QWidget::mouseReleaseEvent(e);
-    qDebug() << e->pos();
     if(e->pos().x() > this->width() or e->pos().y() > this->height()) return;
     if(e->button() == Qt::RightButton) return;
     doLogin();

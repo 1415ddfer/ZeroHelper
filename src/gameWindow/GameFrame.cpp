@@ -123,26 +123,24 @@ HWND GameFrame::loginGame() {
     HWND hwnd;
     int count = 0;
     while (count < 3) {
+        Sleep(1000);
         hwnd = GetTopWindow(nullptr);
         while (hwnd)
         {
             DWORD dwProcessID = 0;
-            DWORD dwTheardId = GetWindowThreadProcessId(hwnd, &dwProcessID);
-            if (dwTheardId != 0)
+            DWORD dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessID);
+            if (dwThreadId != 0)
             {
-                if (pid == dwProcessID && GetParent(hwnd) == NULL && ::IsWindowVisible(hwnd))
+                if (pid == dwProcessID && GetParent(hwnd) == nullptr && ::IsWindowVisible(hwnd))
                 {
                     qDebug() << (WId)hwnd;
-                    return hwnd;    //会有多个相等值
+                    return hwnd;
                 }
             }
             hwnd = GetNextWindow(hwnd, GW_HWNDNEXT);
         }
         logBox.append(QString("获取失败:[%1]").arg(count));
         // 异步延迟，弃用，因实际上该操作在子线程
-        auto time0 = time(nullptr);
-        while (time(nullptr) - time0 < 2) {
-        }
         count++;
     }
     logBox.append("捕获失败");
