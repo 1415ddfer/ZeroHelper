@@ -13,33 +13,16 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 
-QMultiHash<QString, GameData *> memberGames;
 
-
-GameData::GameData(AccData acc0, int rti) {
-    acc = std::move(acc0);
-    runnerTeamIndex = rti;
-    state = OnClosed;
-    lockFree = false;
-}
-
-void GameData::doLogin() {
-    judgeMessage(state == OnClosed, QString("重复登录:%1").arg(acc.nickName))
-    game = new GameFrame(this);
-    game->show();
-}
-
-void GameData::free() {
-    if (lockFree) return;
-    memberGames.remove(acc.userName, this);
-    delete this;
-}
-
-GameFrame::GameFrame(GameData *d) :
+GameFrame::GameFrame(AccData *d) :
         mWidget(this),
         mLayout(&mWidget),
         logBox(&mWidget) {
-    data = d;
+    accData = *d;
+    isCloseByManager = false;
+    flashSaShadow = nullptr;
+    flashSa = nullptr;
+
     setCentralWidget(&mWidget);
     mLayout.setSpacing(0);
     mLayout.setContentsMargins(0, 0, 0, 0);
@@ -67,15 +50,15 @@ void GameFrame::miniSize() {
 }
 
 HWND GameFrame::loginGame() {
-    data->state = OnPosting;
+    emit updateState(OnPosting);
     auto src = QString{};
-    switch (data->acc.providerId) {
+    switch (accData.providerId) {
         default: {
             logBox.append("该服务器暂未收录");
             return nullptr;
         }
         case 0: {
-            if (LoginGamePost::login4399(&data->acc, &logBox, &src)) break;
+            if (LoginGamePost::login4399(&accData, &logBox, &src)) break;
             logBox.append("自动登录失败，启用浏览器模式登录");
             return nullptr;
         }
@@ -91,7 +74,7 @@ HWND GameFrame::loginGame() {
     SHELLEXECUTEINFO sei = {0}; // 初始化结构体
     sei.cbSize = sizeof(SHELLEXECUTEINFO); // 设置结构体大小
     sei.fMask = SEE_MASK_NOCLOSEPROCESS; // 设置标志位
-    // 这个exe 的目录必须保持干净，不然会出现参数-reluacher导致出现两个进程
+    // 这个exe 的目录必须保持干净，不然会出现参数-relaunch导致出现两个进程
     sei.lpFile = L"plugin\\normal.exe"; // 设置要启动的程序
     sei.lpParameters = url; // 设置要传递的参数
     sei.nShow = SW_MINIMIZE; // 设置显示命令为最小化
@@ -99,7 +82,7 @@ HWND GameFrame::loginGame() {
     if (ShellExecuteEx(&sei)) // 调用函数
     {
         pid = GetProcessId(sei.hProcess); // 获取PID
-        printf("The PID of test.exe is %u\n", pid); // 打印PID
+        printf("The PID of test.exe is %lu\n", pid); // 打印PID
         CloseHandle(sei.hProcess); // 关闭进程句柄
     }
     else
@@ -148,8 +131,9 @@ HWND GameFrame::loginGame() {
 }
 
 void GameFrame::closeEvent(QCloseEvent *e) {
-    data->free();
     QWidget::closeEvent(e);
+    if(isCloseByManager) return;
+    emit freeGame(&accData);
 }
 
 void GameFrame::takeFlash() {
@@ -170,5 +154,10 @@ void GameFrame::takeFlash() {
     }
     MoveWindow((HWND) winId(), 0, 0, 1000, 600, 0);
     resize(1000, 600);
+}
+
+void GameFrame::closeByManager() {
+    isCloseByManager = true;
+    close();
 }
 

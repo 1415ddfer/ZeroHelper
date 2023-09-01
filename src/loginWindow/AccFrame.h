@@ -19,7 +19,6 @@
 #include <QCloseEvent>
 #include "../playerData/TeamManager.h"
 #include "../playerData/ServicesManager.h"
-#include "../gameWindow/GameFrame.h"
 #include "ArtButton.h"
 
 class AccFrame;

@@ -22,18 +22,22 @@
 #include "../playerData/TeamManager.h"
 #include "../loginWindow/ArtButton.h"
 
-class GameData;
+
 
 typedef enum{
     OnClosed,
+    OnLoading,
     OnPosting,
+    OnCallingFlash,
     OnRunning
 } GameState;
 
 
 class GameFrame : public QMainWindow{
-    Q_OBJECT
-    GameData* data;
+    Q_OBJECT;
+    AccData accData;
+
+    bool isCloseByManager;
 
     QWidget mWidget;
     QVBoxLayout mLayout;
@@ -47,33 +51,19 @@ class GameFrame : public QMainWindow{
     void closeEvent(QCloseEvent* e) override;
 
     HWND loginGame();
-
+    signals:
+    void freeGame(AccData*);
+    void updateWId(HWND);
+    void updateState(GameState);
 private slots:
     void takeFlash();
 public:
     void normalSize();
     void miniSize();
-    explicit GameFrame(GameData*);
-};
-
-struct GameData {
-    GameFrame *game;
-    GameState state;
-    HWND hwnd;
-    AccData acc;
-    int runnerTeamIndex;
-    int distIndex;
-    bool lockFree;
-
-    explicit GameData(AccData, int rti=0);
-
-    void doReLogin();
-    void doClose();
-    void doLogin();
-    void free();
+    void closeByManager();
+    explicit GameFrame(AccData*);
 };
 
 
-extern QMultiHash<QString, GameData*> memberGames;
 
 #endif //ZEROHELPER_GAMEFRAME_H

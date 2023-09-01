@@ -3,7 +3,7 @@
 //
 
 #include "AccFrame.h"
-
+#include "../playerData/GameManager.h"
 #include <utility>
 
 AccFrame::AccFrame(QWidget *p) :
@@ -215,19 +215,19 @@ void MemberBtn::onEditDone() {
 }
 
 void MemberBtn::doLogin() {
-    if(memberGames.count(member.userName) > 0){
+    auto info = gameManager.getInfo(&member);
+    if(info!= nullptr){
         auto messageBox = QMessageBox(this);
-        messageBox.setText(QString("账号%1已经启动了").arg(member.nickName));
-        messageBox.setInformativeText("是否继续启动游戏？");
+        messageBox.setText(QString("账号%1已经启动了%2").arg(member.nickName).arg(info->getGameState()));
+        messageBox.setInformativeText("继续启动游戏将会关掉已登录的窗口，是否继续登录？");
         messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
         messageBox.setDefaultButton(QMessageBox::Cancel);
         if (QMessageBox::Cancel == messageBox.exec()) {
             return;
         }
+        gameManager.closeGame(&member);
     }
-    auto *data = new GameData(member);
-    memberGames.insert(member.userName, data);
-    data->doLogin();
+    gameManager.createGame(&member);
 }
 
 void MemberBtn::mousePressEvent(QMouseEvent *e) {
