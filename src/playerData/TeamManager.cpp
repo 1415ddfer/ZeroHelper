@@ -3,6 +3,7 @@
 //
 
 #include "TeamManager.h"
+#include "../DataStream/TextDataStreamer.h"
 
 TeamNames *TeamManager::getAllTeamName() {
     auto ret = QJsonValue();
@@ -163,6 +164,47 @@ void TeamManager::updateTeamName(int index, const QString& name) {
     streamer.getObj(&obj);
     obj["teamAcc"] = teams;
     streamer.setObj(&obj);
+}
+
+bool TeamManager::findMember(const QString& name, AccData *acc) {
+    auto re = QJsonValue();
+    streamer.findValue("teamAcc", &re);
+    for (auto i : re.toArray()){
+        for (auto j : i.toObject().value("member").toArray()){
+            auto data = j.toObject();
+            if(data.value("user").toString() == name){
+                *acc = AccData{
+                        data.value("providerId").toInt(),
+                        data.value("user").toString(),
+                        data.value("pwd").toString(),
+                        data.value("nickName").toString(),
+                        data.value("serverId").toString(),
+                };
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool TeamManager::findMember(int index, const QString &name, AccData *acc) {
+    auto re = QJsonValue();
+    streamer.findValue("teamAcc", &re);
+    auto i = re.toArray()[index].toObject();
+    for (auto j : i.value("member").toArray()){
+        auto data = j.toObject();
+        if(data.value("user").toString() == name){
+            *acc = AccData{
+                    data.value("providerId").toInt(),
+                    data.value("user").toString(),
+                    data.value("pwd").toString(),
+                    data.value("nickName").toString(),
+                    data.value("serverId").toString(),
+            };
+            return true;
+        }
+    }
+    return false;
 }
 
 //void TeamManager::updateTeam(int index, UpdateFun fun, void* data) {

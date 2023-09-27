@@ -5,20 +5,28 @@
 #ifndef ZEROHELPER_GAMEMANAGER_H
 #define ZEROHELPER_GAMEMANAGER_H
 
-#include "../gameWindow/GameFrame.h"
+
 #include <QReadWriteLock>
+#include <QObject>
+#include <QMap>
+#include "../gameWindow/GameState.h"
+#include "TeamManager.h"
+
+class GameFrame;
+
+
 
 class GameInfo : public QObject{
 Q_OBJECT;
-    HWND hwnd;
+    unsigned long long hwnd;
     GameState state;
-    QReadWriteLock mutex; // 用于线程安全的互斥锁
+    QReadWriteLock *mutex; // 用于线程安全的互斥锁
 public slots:
-    void setWId(HWND newWid);
+    void setWId(unsigned long long newWid);
     void setState(GameState newState);
 public:
-    explicit GameInfo();
-    HWND getWId();
+    explicit GameInfo(QReadWriteLock *);
+    unsigned long long getWId();
     GameState  getGameState();
 };
 
@@ -31,11 +39,10 @@ public slots:
     void removeGame(AccData* acc);
 public:
     explicit GameManager();
-    ~GameManager();
+    ~GameManager() override;
     bool createGame(AccData* acc);
     GameInfo* getInfo(AccData* acc);
     void closeGame(AccData* acc);
-    WId getWindowId(AccData* acc);
 };
 
 extern GameManager gameManager;

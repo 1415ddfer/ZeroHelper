@@ -54,8 +54,8 @@ void TitleBar::mouseReleaseEvent(QMouseEvent *e) {
 void TitleBar::mouseMoveEvent(QMouseEvent *e) {
     if (isPressed) {
         // 这个窗口不会最大化所以忽略这一判断 省略showNormal()
-        QPoint move_pos = e->globalPos() - startPos;
-        startPos = e->globalPos();
+        QPoint move_pos = e->globalPosition().toPoint() - startPos;
+        startPos = e->globalPosition().toPoint();
         auto p = (QWidget *) parent();
         p->move(p->pos() + move_pos);
     }
@@ -64,7 +64,7 @@ void TitleBar::mouseMoveEvent(QMouseEvent *e) {
 
 void TitleBar::mousePressEvent(QMouseEvent *e) {
     isPressed = true;
-    startPos = e->globalPos();
+    startPos = e->globalPosition().toPoint();
     QWidget::mousePressEvent(e);
 }
 

@@ -25,6 +25,8 @@ class AccFrame;
 class TeamsEdit;
 
 class TeamAdd : public QWidget{
+    int selfId;
+
     QGridLayout mLayout;
     QLabel hintLine;
     ArtLineEdit nameLine;
@@ -42,7 +44,7 @@ private slots:
 public:
     ArtButton closeBtn;
     ArtButton doneBtn;
-    explicit TeamAdd();
+    explicit TeamAdd(int id=-1);
 };
 
 class MemberEdit : public QWidget {

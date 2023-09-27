@@ -12,6 +12,7 @@
 
 struct LoginGamePost{
     static bool login4399(AccData*, QTextEdit*, QString* ret);
+    static bool login4399(AccData*, QList<QString>*, QString* ret);
     static bool login7k7k(AccData*, QTextEdit*, QString* ret);
 };
 

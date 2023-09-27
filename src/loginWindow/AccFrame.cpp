@@ -96,8 +96,8 @@ void AccFrame::contextMenuEvent(QContextMenuEvent *e) {
         name = name->next;
     }
     teams->free();
-    auto *actionEdit = new QAction("编辑队伍", menu);
     auto *actionAM = new QAction("新增账号", menu);
+    auto *actionEdit = new QAction("编辑当前队伍", menu);
     auto *actionAT = new QAction("新增队伍", menu);
     menu->addAction(actionEdit);
     menu->addAction(actionAM);
@@ -352,8 +352,8 @@ void MemberEdit::mouseReleaseEvent(QMouseEvent *e) {
 void MemberEdit::mouseMoveEvent(QMouseEvent *e) {
     if (isPressed) {
         // 这个窗口不会最大化所以忽略这一判断 省略showNormal()
-        QPoint move_pos = e->globalPos() - startPos;
-        startPos = e->globalPos();
+        QPoint move_pos = e->globalPosition().toPoint() - startPos;
+        startPos =  e->globalPosition().toPoint();
         move(pos() + move_pos);
     }
     QWidget::mouseMoveEvent(e);
@@ -361,7 +361,7 @@ void MemberEdit::mouseMoveEvent(QMouseEvent *e) {
 
 void MemberEdit::mousePressEvent(QMouseEvent *e) {
     isPressed = true;
-    startPos = e->globalPos();
+    startPos =  e->globalPosition().toPoint();
     QWidget::mousePressEvent(e);
 }
 
@@ -459,6 +459,7 @@ TeamsEdit::TeamsEdit(AccFrame *p) :
         closeBtn(QIcon(":/button/res/btn_close1.png"), this) {
     background = QPixmap(":/background/res/2.png");
     parent = p;
+    setMinimumSize(350, 200);
     mLayout.setAlignment(Qt::AlignTop);
     mLayout.setSpacing(0);
     mLayout.setContentsMargins(15, 5, 15, 15);
@@ -486,20 +487,22 @@ void TeamsEdit::delTeam(int index) {
 
 void TeamsEdit::reloadLines() {
     for (auto w: linesLayout.children()) {
-        w->setParent(nullptr); // 断开与父控件的关联
-        linesLayout.removeWidget(dynamic_cast<QWidget *>(w)); // 从布局中移除
-        delete w;     // 删除控件
+
+        w->deleteLater();
+//        w->setParent(nullptr); // 断开与父控件的关联
+//        linesLayout.removeWidget(dynamic_cast<QWidget *>(w)); // 从布局中移除
+//        delete w;     // 删除控件
     }
 
-    auto teams = TeamManager::getAllTeamName();
-    auto name = teams->firstTeam;
-    auto index = 0;
-    while (name) {
-        auto *line = new TeamLine(this, name->name, index++);
-        linesLayout.addWidget(line);
-        name = name->next;
-    }
-    teams->free();
+//    auto teams = TeamManager::getAllTeamName();
+//    auto name = teams->firstTeam;
+//    auto index = 0;
+//    while (name) {
+//        auto *line = new TeamLine(this, name->name, index++);
+//        linesLayout.addWidget(line);
+//        name = name->next;
+//    }
+//    teams->free();
 }
 
 void TeamsEdit::closeEvent(QCloseEvent *event) {
@@ -515,8 +518,8 @@ void TeamAdd::mouseReleaseEvent(QMouseEvent *e) {
 void TeamAdd::mouseMoveEvent(QMouseEvent *e) {
     if (isPressed) {
         // 这个窗口不会最大化所以忽略这一判断 省略showNormal()
-        QPoint move_pos = e->globalPos() - startPos;
-        startPos = e->globalPos();
+        QPoint move_pos = e->globalPosition().toPoint() - startPos;
+        startPos = e->globalPosition().toPoint();
         move(pos() + move_pos);
     }
     QWidget::mouseMoveEvent(e);
@@ -524,7 +527,7 @@ void TeamAdd::mouseMoveEvent(QMouseEvent *e) {
 
 void TeamAdd::mousePressEvent(QMouseEvent *e) {
     isPressed = true;
-    startPos = e->globalPos();
+    startPos = e->globalPosition().toPoint();
     QWidget::mousePressEvent(e);
 }
 
@@ -533,7 +536,8 @@ void TeamAdd::closeEvent(QCloseEvent *event) {
     delete this;
 }
 
-TeamAdd::TeamAdd() :
+TeamAdd::TeamAdd(int id) :
+        selfId{id},
         mLayout(this),
         hintLine(QString("队伍名称："), this),
         nameLine(this),
@@ -562,6 +566,9 @@ TeamAdd::TeamAdd() :
 //    mLayout.addWidget(&hintLine, 1, 0);
 //    mLayout.addWidget(&nameLine, 1, 1);
     mLayout.addItem(new QSpacerItem(30, 30, QSizePolicy::Preferred, QSizePolicy::Expanding), 3, 0);
+    if(id >= 0){
+        mLayout.addWidget(&doneBtn, 4, 1, 1, 2);
+    }
     mLayout.addWidget(&doneBtn, 4, 1, 1, 2);
 
     connect(&closeBtn, &QPushButton::clicked, this, &QWidget::close);

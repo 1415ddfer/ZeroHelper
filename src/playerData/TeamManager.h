@@ -6,7 +6,7 @@
 #define ZEROHELPER_TEAMMANAGER_H
 #include <QString>
 #include <QList>
-#include "../DataStream/TextDataStreamer.h"
+
 
 
 struct AccData{
@@ -35,6 +35,8 @@ struct TeamNames{
 struct TeamManager {
     [[nodiscard]]static TeamNames *getAllTeamName();
     static void getTeam(int index, Team*);
+    static bool findMember(const QString& name, AccData *acc);
+    static bool findMember(int index, const QString& name, AccData *acc);
 //    void setTeam(int index, Team*);
     static void addTeam(QString name);
     static void addMember(int index, AccData);

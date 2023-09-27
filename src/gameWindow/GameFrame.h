@@ -7,37 +7,17 @@
 
 
 #include <QWidget>
-#include <QProcess>
 #include <QMainWindow>
-#include <QStackedWidget>
 #include <QTextEdit>
-#include <QMenuBar>
-#include <QStackedLayout>
 #include <QtWidgets/QVBoxLayout>
-
-#include <windows.h>
 #include <QFutureWatcher>
 
-#include "../network/LoginGamePost.h"
 #include "../playerData/TeamManager.h"
-#include "../loginWindow/ArtButton.h"
-
-
-
-typedef enum{
-    OnClosed,
-    OnLoading,
-    OnPosting,
-    OnCallingFlash,
-    OnRunning
-} GameState;
-
+#include "GameState.h"
 
 class GameFrame : public QMainWindow{
     Q_OBJECT;
     AccData accData;
-
-    bool isCloseByManager;
 
     QWidget mWidget;
     QVBoxLayout mLayout;
@@ -51,16 +31,15 @@ class GameFrame : public QMainWindow{
     void closeEvent(QCloseEvent* e) override;
 
     HWND loginGame();
-    signals:
+signals:
     void freeGame(AccData*);
-    void updateWId(HWND);
+    void updateWId(unsigned long long);
     void updateState(GameState);
 private slots:
     void takeFlash();
+    void toNormalSize();
+    void toMiniSize();
 public:
-    void normalSize();
-    void miniSize();
-    void closeByManager();
     explicit GameFrame(AccData*);
 };
 

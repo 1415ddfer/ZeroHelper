@@ -3,6 +3,7 @@
 //
 
 #include "GameManager.h"
+#include "../gameWindow/GameFrame.h"
 
 GameManager gameManager;
 
@@ -14,9 +15,9 @@ bool GameManager::createGame(AccData *acc) {
         auto game = new GameFrame(acc);
         frames.insert(key, game);
         connect(game, SIGNAL(freeGame(AccData*)), this, SLOT(removeGame(AccData*)));
-        auto info = new GameInfo();
+        auto info = new GameInfo(&mutex);
         connect(game, SIGNAL(updateState(GameState)), info, SLOT(setState(GameState)));
-        connect(game, SIGNAL(updateWId(HWND)), info, SLOT(setWId(HWND)));
+        connect(game, SIGNAL(updateWId(unsigned long long)), info, SLOT(setWId(unsigned long long)));
         infos.insert(key, info);
         game->show();
         result = true;
@@ -36,40 +37,35 @@ GameInfo* GameManager::getInfo(AccData *acc) {
 }
 
 void GameManager::closeGame(AccData *acc) {
-    // warning: need close game before
     auto key = QString::number(acc->providerId) + acc->serverId + acc->userName;
-    mutex.lockForWrite();
+    mutex.lockForRead();
     auto *game = frames[key];
+    mutex.unlock();
     if(game == nullptr) {
         qDebug() << "waring: closing not found key:" << key;
-        mutex.unlock();
         return;
     }
-    game->closeByManager();
-    game->deleteLater();
-    frames.remove(key);
-    auto info = infos[key];
-    info->deleteLater();
-    infos.remove(key);
-    mutex.unlock();
+    game->close();
 }
 
 void GameManager::removeGame(AccData *acc) {
     // warning: need close game before
     auto key = QString::number(acc->providerId) + acc->serverId + acc->userName;
-    mutex.lockForWrite();
+    mutex.lockForRead();
     auto *game = frames[key];
+    mutex.unlock();
     if(game == nullptr) {
         qDebug() << "waring: removing not found key:" << key;
-        mutex.unlock();
         return;
     }
-    game->deleteLater();
+//    game->deleteLater();
+    mutex.lockForWrite();
     frames.remove(key);
     auto info = infos[key];
     info->deleteLater();
     infos.remove(key);
     mutex.unlock();
+    qDebug() << "done";
 }
 
 GameManager::GameManager() : QObject(){
@@ -77,44 +73,46 @@ GameManager::GameManager() : QObject(){
 }
 
 GameManager::~GameManager(){
-    for(auto game : frames.values()){
-        game->closeByManager();
-        game->deleteLater();
+    for (auto it = frames.begin(); it != frames.end(); ++it){
+        it.value()->close();
+        it.value()->deleteLater();
     }
-    for(auto info : infos.values()){
-        info->deleteLater();
+    for (auto it = infos.begin(); it != infos.end(); ++it){
+        it.value()->deleteLater();
     }
+//    QObject::~QObject();
 }
 
-void GameInfo::setWId(HWND newWid) {
-    mutex.lockForWrite();
+void GameInfo::setWId(unsigned long long newWid) {
+    mutex->lockForWrite();
     hwnd = newWid;
-    mutex.unlock();
+    mutex->unlock();
 }
 
 void GameInfo::setState(GameState newState) {
-    mutex.lockForWrite();
+    mutex->lockForWrite();
     state = newState;
-    mutex.unlock();
+    mutex->unlock();
 }
 
-HWND GameInfo::getWId() {
-    HWND result;
-    mutex.lockForRead();
+unsigned long long GameInfo::getWId() {
+    unsigned long long result;
+    mutex->lockForRead();
     result = hwnd;
-    mutex.unlock();
+    mutex->unlock();
     return result;
 }
 
 GameState GameInfo::getGameState() {
     GameState result;
-    mutex.lockForRead();
+    mutex->lockForRead();
     result = state;
-    mutex.unlock();
+    mutex->unlock();
     return result;
 }
 
-GameInfo::GameInfo() {
-    hwnd = nullptr;
+GameInfo::GameInfo(QReadWriteLock *m) {
+    mutex = m;
+    hwnd = 0;
     state = OnClosed;
 }

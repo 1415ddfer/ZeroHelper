@@ -3,14 +3,11 @@
 //
 
 #include "GameFrame.h"
+#include "../network/LoginGamePost.h"
+#include <windows.h>
 #include <QWindow>
-#include <QScreen>
+#include <QMenuBar>
 #include <QApplication>
-
-#include <ctime>
-#include <direct.h>
-
-#include <QMessageBox>
 #include <QtConcurrent>
 
 
@@ -19,7 +16,6 @@ GameFrame::GameFrame(AccData *d) :
         mLayout(&mWidget),
         logBox(&mWidget) {
     accData = *d;
-    isCloseByManager = false;
     flashSaShadow = nullptr;
     flashSa = nullptr;
 
@@ -29,8 +25,18 @@ GameFrame::GameFrame(AccData *d) :
     mLayout.addWidget(&logBox);
     logBox.setAttribute(Qt::WA_TransparentForMouseEvents, true); //设置该属性窗口的子控件不能再响应鼠标消息
 
-    logBox.append("窗体加载完成");
+    auto menu = menuBar();
+    auto mSize = new QMenu("窗口大小", menu);
+    auto aSizeMini = new QAction("迷你", mSize);
+    connect(aSizeMini, &QAction::triggered, this, &GameFrame::toMiniSize);
+    auto aSizeNormal = new QAction("常规", mSize);
+    connect(aSizeNormal, &QAction::triggered, this, &GameFrame::toNormalSize);
+    mSize->addAction(aSizeNormal);
+    mSize->addAction(aSizeMini);
+    menu->addMenu(mSize);
 
+    logBox.append("窗体加载完成");
+    emit updateState(OnLoading);
      future = QtConcurrent::run([this]() {
         return loginGame();
     });
@@ -41,16 +47,7 @@ GameFrame::GameFrame(AccData *d) :
 
 }
 
-void GameFrame::normalSize() {
-    resize(1000, 600);
-}
-
-void GameFrame::miniSize() {
-    resize(500, 300);
-}
-
 HWND GameFrame::loginGame() {
-    emit updateState(OnPosting);
     auto src = QString{};
     switch (accData.providerId) {
         default: {
@@ -100,6 +97,7 @@ HWND GameFrame::loginGame() {
                 "Unknown Error %1").arg(err);
         LocalFree(bufPtr);
         logBox.append("创建进程失败:" + result);
+        return nullptr;
     }
 
     // 捕获窗口
@@ -116,14 +114,12 @@ HWND GameFrame::loginGame() {
             {
                 if (pid == dwProcessID && GetParent(hwnd) == nullptr && ::IsWindowVisible(hwnd))
                 {
-                    qDebug() << (WId)hwnd;
                     return hwnd;
                 }
             }
             hwnd = GetNextWindow(hwnd, GW_HWNDNEXT);
         }
         logBox.append(QString("获取失败:[%1]").arg(count));
-        // 异步延迟，弃用，因实际上该操作在子线程
         count++;
     }
     logBox.append("捕获失败");
@@ -131,20 +127,21 @@ HWND GameFrame::loginGame() {
 }
 
 void GameFrame::closeEvent(QCloseEvent *e) {
-    QWidget::closeEvent(e);
-    if(isCloseByManager) return;
     emit freeGame(&accData);
+    QWidget::closeEvent(e);
 }
 
 void GameFrame::takeFlash() {
     auto hwnd = future.result();
-    if(hwnd == nullptr) return;
+    if(hwnd == nullptr)
+    {
+        emit updateState(OnError);
+        return;
+    }
     logBox.setVisible(false);
+    emit updateWId((unsigned long long)hwnd);
     qDebug() << (WId)hwnd;
     flashSa = QWindow::fromWinId((WId) hwnd);
-//        double dpi  = screen()->logicalDotsPerInch() / 96;
-//        qDebug() << dpi;
-//        flashSa->resize(1000/dpi, 600/dpi);
     flashSaShadow = QWidget::createWindowContainer(flashSa);
     flashSaShadow->setParent(&mWidget);
     mLayout.addWidget(flashSaShadow);
@@ -152,12 +149,23 @@ void GameFrame::takeFlash() {
     while (time(nullptr) - time0 < 1) {
         QApplication::processEvents();
     }
+    // must
     MoveWindow((HWND) winId(), 0, 0, 1000, 600, 0);
-    resize(1000, 600);
+    // must
+    resize(1000, 621);
+
+    emit updateState(OnRunning);
 }
 
-void GameFrame::closeByManager() {
-    isCloseByManager = true;
-    close();
+void GameFrame::toNormalSize() {
+    resize(1000, 621);
+    auto hwnd = (HWND)flashSa->winId();
+    SendMessage(hwnd, WM_COMMAND, 20046, 0);
+}
+
+void GameFrame::toMiniSize() {
+    resize(500, 321);
+    auto hwnd = (HWND)flashSa->winId();
+    SendMessage(hwnd, WM_COMMAND, 20034, 0);
 }
 

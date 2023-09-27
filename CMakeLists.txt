@@ -26,11 +26,12 @@ find_package(
         Gui
         Widgets
         Network
+#        HttpServer
         Concurrent
         Qml
         )
 # REQUIRED 必须的
-find_package(GSL REQUIRED)
+#find_package(GSL REQUIRED)
 
 file(GLOB_RECURSE SRCS
         "${PROJECT_SOURCE_DIR}/src/*.h"
@@ -39,16 +40,18 @@ file(GLOB_RECURSE SRCS
         )
 
 #添加额外的 源文件 例如资源文件等
+LIST(APPEND  SRCS qt.conf)
 LIST(APPEND  SRCS res.qrc)
 LIST(APPEND  SRCS res.rc)
 
 add_executable(${PROJECT_NAME}   ${SRCS} )
 target_link_libraries(${PROJECT_NAME}
-        PRIVATE GSL::gsl GSL::gslcblas
+#        PRIVATE GSL::gsl GSL::gslcblas
         Qt::Core
         Qt::Gui
         Qt::Widgets
         Qt::Network
+#        Qt::HttpServer
         Qt::Concurrent
         Qt::Qml
         )
