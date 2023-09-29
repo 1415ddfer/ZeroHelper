@@ -22,9 +22,9 @@
 #include "ArtButton.h"
 
 class AccFrame;
-class TeamsEdit;
 
 class TeamAdd : public QWidget{
+    Q_OBJECT
     int selfId;
 
     QGridLayout mLayout;
@@ -38,16 +38,21 @@ class TeamAdd : public QWidget{
     void mouseMoveEvent(QMouseEvent  *e) override;
     QPixmap background;
     void paintEvent(QPaintEvent*) override;
-    void closeEvent(QCloseEvent *event) override;
+//    void closeEvent(QCloseEvent *event) override;
+    signals:
+    void needReload();
 private slots:
     void onDone();
+    void onDelTeam();
 public:
+    ArtButton delBtn;
     ArtButton closeBtn;
     ArtButton doneBtn;
     explicit TeamAdd(int id=-1);
 };
 
 class MemberEdit : public QWidget {
+Q_OBJECT
     QGridLayout mLayout;
     QLabel sidLabel;
     ArtLineEdit sidEdit;
@@ -80,48 +85,8 @@ public:
     void initDoneEvent();
 };
 
-class TeamLine : public QWidget{
-    ArtLineEdit teamName;
-    ArtButton editBtn;
-    ArtButton delBtn;
-
-    QHBoxLayout mLayout;
-
-    QPixmap background;
-
-    bool Editing;
-    int selfIndex;
-    TeamsEdit* parent;
-    void enterEvent(QEnterEvent *) override;
-    void leaveEvent(QEvent *) override;
-private slots:
-    void onDel();
-    void onEdit();
-    void onDone();
-
-public:
-    explicit TeamLine(TeamsEdit* p, const QString& name, int index);
-};
-
-class TeamsEdit: public QWidget{
-    QGridLayout mLayout;
-    QWidget lines;
-    QVBoxLayout linesLayout;
-    ArtButton closeBtn;
-    ArtButton doneBtn;
-    AccFrame *parent;
-
-    QPixmap background;
-    void paintEvent(QPaintEvent*) override;
-    void closeEvent(QCloseEvent *event) override;
-
-    void reloadLines();
-public:
-    void delTeam(int index);
-    explicit TeamsEdit(AccFrame* p);
-};
-
 class MemberBtn : public QWidget {
+Q_OBJECT
     QLabel imgLabel;
     QLabel textLabel;
     QVBoxLayout mLayout;
@@ -148,19 +113,20 @@ public:
 };
 
 class AccFrame : public QWidget {
+    Q_OBJECT
     QGridLayout mLayout;
 //    QScrollArea mScroll;
     QList<MemberBtn *> btnList;
     void contextMenuEvent(QContextMenuEvent *) override;
 private slots:
-    void onEditMenu();
+    void onEditTeam() const;
     void onAddMember() const;
     static void onAddTeam();
+    void onDelTeam();
 public:
     int selfIndex;
 
     void reloadTeam();
-    void delTeam(int index=-1);
     void delMember(int, const QString&);
     void delMember(int) const;
     void updateMember(int index, AccData member) const;

@@ -48,18 +48,6 @@ void AccFrame::reloadTeam() {
     }
 }
 
-void AccFrame::delTeam(int index) {
-    if (index == -1 or index == selfIndex) {
-        TeamManager::delTeam(selfIndex--);
-    } else if (index > selfIndex) {
-        TeamManager::delTeam(index);
-    } else {
-        TeamManager::delTeam(index);
-        selfIndex--;
-    }
-    reloadTeam();
-}
-
 void AccFrame::delMember(int index, const QString& name) {
     auto messageBox = QMessageBox(this);
     messageBox.setText(QString("即将删除账号%1").arg(name));
@@ -80,40 +68,52 @@ void AccFrame::updateMember(int index, AccData member) const {
 
 void AccFrame::contextMenuEvent(QContextMenuEvent *e) {
     auto *menu = new QMenu(this);
+
+    auto *actionAM = new QAction("新增账号", menu);
+    menu->addAction(actionAM);
+    connect(actionAM, &QAction::triggered, this, &AccFrame::onAddMember);
+
+    auto *editMenu = new QMenu("管理队伍", menu);
+    menu->addMenu(editMenu);
+    auto *actionEdit = new QAction("编辑当前队伍", editMenu);
+    editMenu->addAction(actionEdit);
+    connect(actionEdit, &QAction::triggered, this, &AccFrame::onEditTeam);
+    auto *actionAdd = new QAction("新建一个队伍", editMenu);
+    editMenu->addAction(actionAdd);
+    connect(actionAdd, &QAction::triggered, this, &AccFrame::onAddTeam);
+
+
     auto teams = TeamManager::getAllTeamName();
     auto name = teams->firstTeam;
-    int index = 0;
-    while (name) {
-        if(index != selfIndex) {
-            auto *action = new QAction(name->name, menu);
-            menu->addAction(action);
-            connect(action, &QAction::triggered, this, [index, this]() {
-                selfIndex = index;
-                reloadTeam();
-            });
+
+    if(name){
+        auto *move_menu = new QMenu("打开其他队伍", menu);
+        menu->addMenu(move_menu);
+        int index = 0;
+        while (name) {
+            if (index != selfIndex) {
+                auto *action = new QAction(name->name, move_menu);
+                move_menu->addAction(action);
+                connect(action, &QAction::triggered, this, [index, this]() {
+                    selfIndex = index;
+                    reloadTeam();
+                });
+            }
+            index++;
+            name = name->next;
         }
-        index++;
-        name = name->next;
     }
+
     teams->free();
-    auto *actionAM = new QAction("新增账号", menu);
-    auto *actionEdit = new QAction("编辑当前队伍", menu);
-    auto *actionAT = new QAction("新增队伍", menu);
-    menu->addAction(actionEdit);
-    menu->addAction(actionAM);
-    menu->addAction(actionAT);
-
-    connect(actionEdit, &QAction::triggered, this, &AccFrame::onEditMenu);
-    connect(actionAM, &QAction::triggered, this, &AccFrame::onAddMember);
-    connect(actionAT, &QAction::triggered, this, &AccFrame::onAddTeam);
-
     menu->exec(e->globalPos());
     delete menu; // 这会自动删除action和菜单里的其他所有对象 因为 new QAction(menu) 设置了父子关系
 }
 
-void AccFrame::onEditMenu() {
-    auto *dialog = new TeamsEdit(this);
-    dialog->show();
+void AccFrame::onEditTeam() const {
+    auto *edit = new TeamAdd(selfIndex);
+    edit->setAttribute(Qt::WA_DeleteOnClose);
+    connect(edit, &TeamAdd::needReload, this, &AccFrame::onDelTeam);
+    edit->show();
 }
 
 void AccFrame::onAddMember() const {
@@ -125,7 +125,13 @@ void AccFrame::onAddMember() const {
 
 void AccFrame::onAddTeam() {
     auto *edit = new TeamAdd();
+    edit->setAttribute(Qt::WA_DeleteOnClose);
     edit->show();
+}
+
+void AccFrame::onDelTeam(){
+    selfIndex--;
+    reloadTeam();
 }
 
 MemberBtn::MemberBtn(AccFrame *p, const AccData &m, int index) :
@@ -365,151 +371,6 @@ void MemberEdit::mousePressEvent(QMouseEvent *e) {
     QWidget::mousePressEvent(e);
 }
 
-TeamLine::TeamLine(TeamsEdit *p, const QString &name, int index) :
-        mLayout(this),
-        teamName(this),
-        editBtn(QIcon(":/button/res/4.png"), this),
-        delBtn(QIcon(":/button/res/5.png"), this) {
-    setParent(p);
-    selfIndex = index;
-    parent = p;
-    setAttribute(Qt::WA_TranslucentBackground, true);
-
-    delBtn.setStyleSheet("QPushButton{border:none;background:transparent;}");
-    editBtn.setStyleSheet("QPushButton{border:none;background:transparent;}");
-
-    teamName.setText(name);
-    connect(&teamName, &QLineEdit::editingFinished, this, &TeamLine::onDone);
-    connect(&delBtn, &QPushButton::clicked, this, &TeamLine::onDel);
-    connect(&editBtn, &QPushButton::clicked, this, &TeamLine::onEdit);
-    Editing = false;
-
-    teamName.setEnabled(false);
-    editBtn.setVisible(false);
-    delBtn.setVisible(false);
-
-    editBtn.setFixedSize(16, 18);
-    delBtn.setFixedSize(16, 18);
-
-    mLayout.addWidget(&teamName);
-    mLayout.addWidget(&editBtn);
-    mLayout.addWidget(&delBtn);
-}
-
-void TeamLine::enterEvent(QEnterEvent *) {
-    if (Editing) return;
-    editBtn.setVisible(true);
-    delBtn.setVisible(true);
-}
-
-void TeamLine::leaveEvent(QEvent *) {
-    if (Editing) return;
-    editBtn.setVisible(false);
-    delBtn.setVisible(false);
-}
-
-void TeamLine::onDel() {
-    auto messageBox = QMessageBox(this);
-    messageBox.setText(QString("即将删除队伍:%1").arg(teamName.text()));
-    messageBox.setInformativeText("是否继续？");
-    messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-    messageBox.setDefaultButton(QMessageBox::Cancel);
-    if (QMessageBox::Yes == messageBox.exec()) {
-        parent->delTeam(selfIndex);
-    }
-}
-
-void TeamLine::onEdit() {
-    Editing = true;
-    editBtn.setVisible(false);
-    delBtn.setVisible(false);
-    teamName.setEnabled(true);
-}
-
-void TeamLine::onDone() {
-//    auto messageBox = QMessageBox(this);
-//    messageBox.setText("队伍名称已修改");
-//    messageBox.setInformativeText("是否保存？");
-//    messageBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-//    messageBox.setDefaultButton(QMessageBox::Save);
-//    if (QMessageBox::Save == messageBox.exec()) {
-//
-//    }
-    if (!Editing) return;
-    TeamManager::updateTeamName(selfIndex, teamName.text());
-    teamName.setEnabled(false);
-    Editing = false;
-    if (hasFocus()) {
-        editBtn.setVisible(true);
-        delBtn.setVisible(true);
-    }
-}
-
-void TeamsEdit::paintEvent(QPaintEvent *) {
-
-    QPainter painter(this);
-    painter.drawPixmap(rect(), background, QRect());
-}
-
-TeamsEdit::TeamsEdit(AccFrame *p) :
-        mLayout(this),
-        lines(this),
-        linesLayout(&lines),
-        doneBtn(QIcon(":/button/res/25.png"), this),
-        closeBtn(QIcon(":/button/res/btn_close1.png"), this) {
-    background = QPixmap(":/background/res/2.png");
-    parent = p;
-    setMinimumSize(350, 200);
-    mLayout.setAlignment(Qt::AlignTop);
-    mLayout.setSpacing(0);
-    mLayout.setContentsMargins(15, 5, 15, 15);
-    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
-    setAttribute(Qt::WA_TranslucentBackground, true);
-    mLayout.addWidget(&closeBtn, 0, 2);
-    mLayout.addWidget(&lines, 1, 0);
-    mLayout.addWidget(&doneBtn, 2, 1, 1, 2);
-
-    closeBtn.setFixedSize(34, 23);
-    closeBtn.setIconSize(QSize(34, 23));
-    doneBtn.setFixedSize(60, 26);
-    doneBtn.setIconSize(QSize(60, 26));
-
-    connect(&closeBtn, &QPushButton::clicked, this, &QWidget::close);
-    connect(&doneBtn, &QPushButton::clicked, this, &QWidget::close);
-
-    reloadLines();
-}
-
-void TeamsEdit::delTeam(int index) {
-    parent->delTeam(index);
-    reloadLines();
-}
-
-void TeamsEdit::reloadLines() {
-    for (auto w: linesLayout.children()) {
-
-        w->deleteLater();
-//        w->setParent(nullptr); // 断开与父控件的关联
-//        linesLayout.removeWidget(dynamic_cast<QWidget *>(w)); // 从布局中移除
-//        delete w;     // 删除控件
-    }
-
-//    auto teams = TeamManager::getAllTeamName();
-//    auto name = teams->firstTeam;
-//    auto index = 0;
-//    while (name) {
-//        auto *line = new TeamLine(this, name->name, index++);
-//        linesLayout.addWidget(line);
-//        name = name->next;
-//    }
-//    teams->free();
-}
-
-void TeamsEdit::closeEvent(QCloseEvent *event) {
-    QWidget::closeEvent(event);
-    delete this;
-}
-
 void TeamAdd::mouseReleaseEvent(QMouseEvent *e) {
     isPressed = false;
     QWidget::mouseReleaseEvent(e);
@@ -531,19 +392,19 @@ void TeamAdd::mousePressEvent(QMouseEvent *e) {
     QWidget::mousePressEvent(e);
 }
 
-void TeamAdd::closeEvent(QCloseEvent *event) {
-    QWidget::closeEvent(event);
-    delete this;
-}
+//void TeamAdd::closeEvent(QCloseEvent *event) {
+//    QWidget::closeEvent(event);
+//    delete this;
+//}
 
 TeamAdd::TeamAdd(int id) :
         selfId{id},
         mLayout(this),
         hintLine(QString("队伍名称："), this),
         nameLine(this),
+        delBtn(QIcon(":/button/res/btn_close1.png"), this),
         doneBtn(QIcon(":/button/res/25.png"), this),
         closeBtn(QIcon(":/button/res/btn_close1.png"), this) {
-    setWindowTitle("新建队伍");
     background = QPixmap(":/background/res/2.png");
     mLayout.setAlignment(Qt::AlignTop);
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
@@ -556,20 +417,30 @@ TeamAdd::TeamAdd(int id) :
     doneBtn.setIconSize(QSize(60, 26));
     setFixedHeight(200);
 
-    mLayout.addWidget(&closeBtn, 0, 2);
-    mLayout.addItem(new QSpacerItem(30, 30, QSizePolicy::Preferred, QSizePolicy::Expanding), 1, 0);
+
     auto *lineLayout = new QHBoxLayout();
-    mLayout.addLayout(lineLayout,2, 0);
     lineLayout->addWidget(&hintLine);
     lineLayout->addWidget(&nameLine);
-//    lineLayout->setSpacing(10);
-//    mLayout.addWidget(&hintLine, 1, 0);
-//    mLayout.addWidget(&nameLine, 1, 1);
-    mLayout.addItem(new QSpacerItem(30, 30, QSizePolicy::Preferred, QSizePolicy::Expanding), 3, 0);
-    if(id >= 0){
+    if (id < 0){
+        setWindowTitle("新建队伍");
+
+        mLayout.addWidget(&closeBtn, 0, 2);
+        mLayout.addItem(new QSpacerItem(30, 30, QSizePolicy::Preferred, QSizePolicy::Expanding), 1, 0);
+        mLayout.addLayout(lineLayout,2, 0);
+        mLayout.addItem(new QSpacerItem(30, 30, QSizePolicy::Preferred, QSizePolicy::Expanding), 3, 0);
+        delBtn.setVisible(false);
         mLayout.addWidget(&doneBtn, 4, 1, 1, 2);
+    } else{
+        setWindowTitle("更改队伍");
+        mLayout.addWidget(&closeBtn, 0, 5);
+        mLayout.addItem(new QSpacerItem(30, 30, QSizePolicy::Preferred, QSizePolicy::Expanding), 1, 0);
+        mLayout.addLayout(lineLayout,2, 0, 1, 3);
+        mLayout.addItem(new QSpacerItem(30, 30, QSizePolicy::Preferred, QSizePolicy::Expanding), 3, 0);
+        mLayout.addWidget(&delBtn, 4, 2, 1, 2);
+        mLayout.addWidget(&doneBtn, 4, 4, 1, 2);
+        connect(&delBtn, &QPushButton::clicked, this, &TeamAdd::onDelTeam);
     }
-    mLayout.addWidget(&doneBtn, 4, 1, 1, 2);
+
 
     connect(&closeBtn, &QPushButton::clicked, this, &QWidget::close);
     connect(&doneBtn, &QPushButton::clicked, this, &TeamAdd::onDone);
@@ -580,6 +451,20 @@ void TeamAdd::onDone() {
     judgeMessage(text!= nullptr, "名字不能为空")
     TeamManager::addTeam(nameLine.text());
     close();
+}
+
+void TeamAdd::onDelTeam() {
+    auto messageBox = QMessageBox(this);
+    messageBox.setText(QString("即将删除队伍:%1").arg(nameLine.text()));
+    messageBox.setInformativeText("是否继续？");
+    messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    messageBox.setDefaultButton(QMessageBox::Cancel);
+    if (QMessageBox::Yes == messageBox.exec()) {
+        TeamManager::delTeam(selfId);
+        emit needReload();
+        close();
+    }
+
 }
 
 void TeamAdd::paintEvent(QPaintEvent *) {
