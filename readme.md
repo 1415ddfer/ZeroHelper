@@ -4,6 +4,14 @@ a local launcher of DDTank without install FlashPlayer
 
 一个无需安装flash player就可以游玩弹弹堂的本地启动器
 
+## Auto Api 脚本接口
+
+when the program is running, use http://127.0.0.1/7233/nickName/{your_account_nickName}/start
+to start the game or take games window hwnd
+
+使用 http://127.0.0.1/7233/nickName/{你账号的备注名}/start 来告诉登陆器启动游戏
+并获取窗口句柄
+
 # Start 食用方法
 
 ## download 下载
@@ -16,14 +24,15 @@ a local launcher of DDTank without install FlashPlayer
 
 need mingw, vcpkg and qt6 with mingw version
 
-需要本机环境有mingw, vcpkg和 mingw 版本的qt6
+need qhttpserver lib in vcpkg, use this command to install this lib.
 
-need GSL lib in vcpkg, use this command to install this lib.
+需要本机环境有mingw, vcpkg和 qt6.53
 
-需要再vcpkg里面安装gls库，使用下面的指令即可安装
+
+需要再vcpkg里面安装qhttpserver库，使用下面的指令即可安装
 ```commandline
 
-vcpkg install gsl:x64-windows
+vcpkg install qhttpserver
 
 ```
 
