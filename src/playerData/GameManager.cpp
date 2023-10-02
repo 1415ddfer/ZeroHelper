@@ -36,6 +36,15 @@ GameInfo* GameManager::getInfo(AccData *acc) {
     return result;
 }
 
+bool GameManager::counterInfo(AccData *acc) {
+    bool result;
+    auto key = QString::number(acc->providerId) + acc->serverId + acc->userName;
+    mutex.lockForRead();
+    result = infos.count(key);
+    mutex.unlock();
+    return result;
+}
+
 void GameManager::closeGame(AccData *acc) {
     auto key = QString::number(acc->providerId) + acc->serverId + acc->userName;
     mutex.lockForRead();

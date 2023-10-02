@@ -402,7 +402,7 @@ TeamAdd::TeamAdd(int id) :
         mLayout(this),
         hintLine(QString("队伍名称："), this),
         nameLine(this),
-        delBtn(QIcon(":/button/res/btn_close1.png"), this),
+        delBtn(QIcon(":/button/res/del.png"), this),
         doneBtn(QIcon(":/button/res/25.png"), this),
         closeBtn(QIcon(":/button/res/btn_close1.png"), this) {
     background = QPixmap(":/background/res/2.png");
@@ -411,6 +411,8 @@ TeamAdd::TeamAdd(int id) :
     setAttribute(Qt::WA_TranslucentBackground, true);
     mLayout.setSpacing(10);
     mLayout.setContentsMargins(15, 5, 15, 15);
+    delBtn.setFixedSize(60, 30);
+    delBtn.setIconSize(QSize(60, 30));
     closeBtn.setFixedSize(34, 23);
     closeBtn.setIconSize(QSize(34, 23));
     doneBtn.setFixedSize(60, 26);
@@ -432,6 +434,12 @@ TeamAdd::TeamAdd(int id) :
         mLayout.addWidget(&doneBtn, 4, 1, 1, 2);
     } else{
         setWindowTitle("更改队伍");
+        auto teams = TeamManager::getAllTeamName();
+        auto team = teams->firstTeam;
+        for (int i = 0; i < selfId; ++i) {
+            team = team->next;
+        }
+        nameLine.setText(team->name);
         mLayout.addWidget(&closeBtn, 0, 5);
         mLayout.addItem(new QSpacerItem(30, 30, QSizePolicy::Preferred, QSizePolicy::Expanding), 1, 0);
         mLayout.addLayout(lineLayout,2, 0, 1, 3);
@@ -449,13 +457,18 @@ TeamAdd::TeamAdd(int id) :
 void TeamAdd::onDone() {
     auto text = nameLine.text();
     judgeMessage(text!= nullptr, "名字不能为空")
-    TeamManager::addTeam(nameLine.text());
+    if (selfId < 0) {
+        TeamManager::addTeam(nameLine.text());
+    } else{
+        TeamManager::updateTeamName(selfId, nameLine.text());
+    }
     close();
 }
 
 void TeamAdd::onDelTeam() {
     auto messageBox = QMessageBox(this);
-    messageBox.setText(QString("即将删除队伍:%1").arg(nameLine.text()));
+    messageBox.setWindowTitle("功德获取");
+    messageBox.setText(QString("即将放生队伍:%1，以及其下所有账号").arg(nameLine.text()));
     messageBox.setInformativeText("是否继续？");
     messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
     messageBox.setDefaultButton(QMessageBox::Cancel);

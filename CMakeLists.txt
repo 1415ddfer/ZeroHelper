@@ -14,7 +14,7 @@ set(CMAKE_SYSTEM_VERSION 11)
 
 set(QTVersion 6)
 #set(Qt6_DIR D:/IdeaTools/Qt6/6.4.3/msvc2019_64/lib/cmake/Qt6)
-set(Qt6_DIR D:/IdeaTools/Qt6/6.5.2/mingw_64/lib/cmake/Qt6)
+set(Qt6_DIR D:/IdeaTools/Qt6/6.5.3/mingw_64/lib/cmake/Qt6)
 #set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
 
@@ -26,7 +26,7 @@ find_package(
         Gui
         Widgets
         Network
-#        HttpServer
+        HttpServer
         Concurrent
         Qml
         )
@@ -51,8 +51,8 @@ target_link_libraries(${PROJECT_NAME}
         Qt::Gui
         Qt::Widgets
         Qt::Network
-#        Qt::HttpServer
+        Qt::HttpServer
         Qt::Concurrent
-        Qt::Qml
+        Qt${QTVersion}::Qml
         )
 

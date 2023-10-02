@@ -1,6 +1,7 @@
 #include <QApplication>
 //#include "gameLogic/calculationPower.h"
 #include "loginWindow/MainFrame.h"
+#include "network/TcpControlApi.h"
 #include <windows.h>
 //#include <QJSEngine>
 
@@ -32,6 +33,8 @@ int main(int argc, char *argv[])
 //
 //    QString encryptedText = result.toString();
 //    qDebug() << encryptedText;
+
+    new ApiServer();
     auto test = MainFrame();
     test.show();
     QApplication::exec();

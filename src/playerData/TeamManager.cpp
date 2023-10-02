@@ -172,7 +172,7 @@ bool TeamManager::findMember(const QString& name, AccData *acc) {
     for (auto i : re.toArray()){
         for (auto j : i.toObject().value("member").toArray()){
             auto data = j.toObject();
-            if(data.value("user").toString() == name){
+            if(data.value("nickName").toString() == name){
                 *acc = AccData{
                         data.value("providerId").toInt(),
                         data.value("user").toString(),
