@@ -22,6 +22,7 @@ class GameFrame : public QMainWindow{
     QWidget mWidget;
     QVBoxLayout mLayout;
     QTextEdit logBox;
+    ulong flashSaPid;
     QWidget *flashSaShadow;
     QWindow *flashSa;
     QFuture<HWND> future;

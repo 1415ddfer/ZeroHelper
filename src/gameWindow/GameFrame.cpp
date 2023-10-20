@@ -65,7 +65,6 @@ HWND GameFrame::loginGame() {
     auto url_char = buff.data();
     int len = MultiByteToWideChar( CP_ACP, 0, url_char, strlen(url_char), nullptr, 0);
     auto * url = new wchar_t[len+1];
-    DWORD pid;
     MultiByteToWideChar( CP_ACP, 0, url_char, strlen( url_char), url, len);
     url[len]= '\0' ;
     SHELLEXECUTEINFO sei = {0}; // 初始化结构体
@@ -78,8 +77,8 @@ HWND GameFrame::loginGame() {
 
     if (ShellExecuteEx(&sei)) // 调用函数
     {
-        pid = GetProcessId(sei.hProcess); // 获取PID
-        printf("The PID of test.exe is %lu\n", pid); // 打印PID
+        flashSaPid = GetProcessId(sei.hProcess); // 获取PID
+        printf("The PID of test.exe is %lu\n", flashSaPid); // 打印PID
         CloseHandle(sei.hProcess); // 关闭进程句柄
     }
     else
@@ -112,9 +111,9 @@ HWND GameFrame::loginGame() {
             DWORD dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessID);
             if (dwThreadId != 0)
             {
-                if (pid == dwProcessID && GetParent(hwnd) == nullptr && ::IsWindowVisible(hwnd))
+                if (flashSaPid == dwProcessID && GetParent(hwnd) == nullptr && ::IsWindowVisible(hwnd))
                 {
-                    return hwnd;
+                    return nullptr;
                 }
             }
             hwnd = GetNextWindow(hwnd, GW_HWNDNEXT);
@@ -128,7 +127,22 @@ HWND GameFrame::loginGame() {
 
 void GameFrame::closeEvent(QCloseEvent *e) {
     emit freeGame(&accData);
+    auto pid = flashSaPid;
     QWidget::closeEvent(e);
+    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid); // 获取进程句柄
+    if (hProcess == nullptr) // 判断是否获取成功
+    {
+        qDebug() << "OpenProcess failed: " << GetLastError();
+    }
+    if (TerminateProcess(hProcess, 0)) // 终止进程
+    {
+        qDebug() << "TerminateProcess succeeded.";
+    }
+    else
+    {
+        qDebug() << "TerminateProcess failed: " << GetLastError();
+    }
+    CloseHandle(hProcess); // 关闭句柄
 }
 
 void GameFrame::takeFlash() {
@@ -143,7 +157,7 @@ void GameFrame::takeFlash() {
     qDebug() << (WId)hwnd;
     flashSa = QWindow::fromWinId((WId) hwnd);
     flashSaShadow = QWidget::createWindowContainer(flashSa);
-    flashSaShadow->setParent(&mWidget);
+//    flashSaShadow->setParent(&mWidget);
     mLayout.addWidget(flashSaShadow);
     auto time0 = time(nullptr);
     while (time(nullptr) - time0 < 1) {
