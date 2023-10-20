@@ -113,7 +113,7 @@ HWND GameFrame::loginGame() {
             {
                 if (flashSaPid == dwProcessID && GetParent(hwnd) == nullptr && ::IsWindowVisible(hwnd))
                 {
-                    return nullptr;
+                    return hwnd;
                 }
             }
             hwnd = GetNextWindow(hwnd, GW_HWNDNEXT);
