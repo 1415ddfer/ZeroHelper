@@ -31,6 +31,8 @@ class GameFrame : public QMainWindow{
 //    void paintEvent(QPaintEvent*) override;
     void closeEvent(QCloseEvent* e) override;
 
+    void resizeGame(int w, int h);
+
     HWND loginGame();
 signals:
     void freeGame(AccData*);

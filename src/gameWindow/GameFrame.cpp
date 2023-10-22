@@ -34,6 +34,7 @@ GameFrame::GameFrame(AccData *d) :
     mSize->addAction(aSizeNormal);
     mSize->addAction(aSizeMini);
     menu->addMenu(mSize);
+    toMiniSize();
 
     logBox.append("窗体加载完成");
     emit updateState(OnLoading);
@@ -49,17 +50,7 @@ GameFrame::GameFrame(AccData *d) :
 
 HWND GameFrame::loginGame() {
     auto src = QString{};
-    switch (accData.providerId) {
-        default: {
-            logBox.append("该服务器暂未收录");
-            return nullptr;
-        }
-        case 0: {
-            if (LoginGamePost::login4399(&accData, &logBox, &src)) break;
-            logBox.append("自动登录失败，启用浏览器模式登录");
-            return nullptr;
-        }
-    }
+    if (!LoginGamePost::doLogin(&accData, &logBox, &src)) return nullptr;
 
     auto buff = src.toLatin1();
     auto url_char = buff.data();
@@ -125,6 +116,12 @@ HWND GameFrame::loginGame() {
     return nullptr;
 }
 
+void GameFrame::resizeGame(int w, int h) {
+    auto gameSize = flashSaShadow->size();
+    auto mainSize = size();
+    resize(mainSize.width() + gameSize.width() - w, mainSize.height() + gameSize.height() - h);
+}
+
 void GameFrame::closeEvent(QCloseEvent *e) {
     emit freeGame(&accData);
     auto pid = flashSaPid;
@@ -166,19 +163,21 @@ void GameFrame::takeFlash() {
     // must
     MoveWindow((HWND) winId(), 0, 0, 1000, 600, 0);
     // must
-    resize(1000, 621);
+    toNormalSize();
 
     emit updateState(OnRunning);
 }
 
 void GameFrame::toNormalSize() {
-    resize(1000, 621);
+    resizeGame(1000, 600);
+    if (!flashSa) return;
     auto hwnd = (HWND)flashSa->winId();
     SendMessage(hwnd, WM_COMMAND, 20046, 0);
 }
 
 void GameFrame::toMiniSize() {
-    resize(500, 321);
+    resizeGame(500, 300);
+    if (!flashSa) return;
     auto hwnd = (HWND)flashSa->winId();
     SendMessage(hwnd, WM_COMMAND, 20034, 0);
 }

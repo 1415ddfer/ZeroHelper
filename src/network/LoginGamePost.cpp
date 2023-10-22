@@ -3,7 +3,25 @@
 //
 
 #include "LoginGamePost.h"
+#include "QNetworkCookieJar.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QRegularExpression>
 
+bool LoginGamePost::doLogin(AccData *acc, QTextEdit *log, QString *ret) {
+    switch (acc->providerId) {
+        default: {
+            log->append("该服务器暂未收录");
+            return false;
+        }
+        case 0: {
+            if (LoginGamePost::login4399(acc, log, ret)) break;
+            log->append("自动登录失败，启用浏览器模式登录");
+            return false;
+        }
+    }
+    return true;
+}
 
 bool LoginGamePost::login4399(AccData *acc, QTextEdit *log, QString *ret) {
     HttpManager http;
