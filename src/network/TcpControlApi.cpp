@@ -53,7 +53,7 @@ ApiServer::ApiServer() :
     };
     });
 
-    server.listen(QHostAddress::Any, 7233);
+    server.listen(QHostAddress::LocalHost, 7233);
 }
 
 void ApiServer::repStartGame(QHttpServerResponder &&responder) {

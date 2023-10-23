@@ -34,7 +34,6 @@ GameFrame::GameFrame(AccData *d) :
     mSize->addAction(aSizeNormal);
     mSize->addAction(aSizeMini);
     menu->addMenu(mSize);
-    toMiniSize();
 
     logBox.append("窗体加载完成");
     emit updateState(OnLoading);
@@ -117,9 +116,11 @@ HWND GameFrame::loginGame() {
 }
 
 void GameFrame::resizeGame(int w, int h) {
-    auto gameSize = flashSaShadow->size();
+    QSize gameSize;
+    if (flashSa) gameSize = flashSa->size();
+    else gameSize = logBox.size();
     auto mainSize = size();
-    resize(mainSize.width() + gameSize.width() - w, mainSize.height() + gameSize.height() - h);
+    resize(mainSize.width() + w - gameSize.width() , mainSize.height() + h - gameSize.height());
 }
 
 void GameFrame::closeEvent(QCloseEvent *e) {
