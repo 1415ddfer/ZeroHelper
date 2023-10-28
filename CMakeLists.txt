@@ -29,6 +29,7 @@ find_package(
         )
 # REQUIRED 必须的
 #find_package(GSL REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 file(GLOB_RECURSE SRCS
         "${PROJECT_SOURCE_DIR}/src/*.h"
@@ -44,6 +45,7 @@ LIST(APPEND  SRCS res.rc)
 add_executable(${PROJECT_NAME}   ${SRCS} )
 target_link_libraries(${PROJECT_NAME}
 #        PRIVATE GSL::gsl GSL::gslcblas
+        OpenSSL::Crypto
         Qt::Core
         Qt::Gui
         Qt::Widgets

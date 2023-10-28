@@ -34,8 +34,8 @@
         "gameUrl": "http://web.7k7k.com/games/togame.php?target=ddt_7&server_id=%1"
       },
       {
-        "name": "清扬10.8",
-        "nick": "清",
+        "name": "7道",
+        "nick": "7道",
         "postUrl": "http://zc.7k7k.com/post_login",
         "loginBody": "username=%1&password=%2",
         "gameUrl": "http://web.7k7k.com/games/togame.php?target=ddt_7&server_id=1"
