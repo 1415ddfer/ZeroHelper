@@ -43,6 +43,7 @@ struct TeamManager {
     static void delMember(int index, int mIndex);
     static void updateMember(int index, int mIndex, AccData);
     static void updateTeamName(int index, const QString& name);
+    static bool hasLocData();
 
     static void delTeam(int index);
 };

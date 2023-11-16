@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <openssl/evp.h>
 #include <openssl/aes.h>
-#include "com/QAes/qaesencryption.h"
 
 
 //void testCal() {
@@ -76,53 +75,7 @@ char* aes_encrypt(const char* plaintext, const char* key) {
 
 
 
-void test_aes();
-void test_aes1(){
-    QString plainText = "123";
-    // 密钥字符串
-    QString key = "lzYW5qaXVqa";
-    // 加密模式
-    QAESEncryption::Aes level = QAESEncryption::AES_256;
-    // 填充模式
-    QAESEncryption::Padding padding = QAESEncryption::PKCS7;
 
-    // 创建加密对象
-    QAESEncryption encryption(level, QAESEncryption::ECB, padding);
-
-    // 将明文和密钥转换为字节数组
-    QByteArray input = plainText.toUtf8();
-    QByteArray keyData = key.toUtf8();
-
-    // 生成盐值，用于增加加密强度
-    QByteArray salt = QCryptographicHash::hash(keyData, QCryptographicHash::Sha256);
-
-    // 使用盐值对密钥进行哈希运算，得到真正的密钥
-    QByteArray hashedKey = QCryptographicHash::hash(keyData + salt, QCryptographicHash::Sha256);
-
-    // 对明文进行加密，得到加密后的字节数组
-    QByteArray encryptedData = encryption.encode(input, hashedKey);
-
-    // 将加密后的字节数组转换为Base64字符串，方便输出或存储
-    QByteArray encryptedString = encryptedData.toBase64();
-
-    // 输出结果
-    qDebug() << "Plaintext:" << plainText;
-    qDebug() << "Key:" << key;
-    qDebug() << "Salt:" << salt.toHex();
-    qDebug() << "Ciphertext:" << encryptedString;
-
-    // 对密文进行解密，得到解密后的字节数组
-    QByteArray decryptedData = encryption.decode(encryptedString, hashedKey);
-
-    // 移除填充，得到原始的明文字节数组
-    QByteArray decryptedText = QAESEncryption::RemovePadding(decryptedData, padding);
-
-    // 将明文字节数组转换为字符串，方便输出或存储
-    QString decryptedString = QString(decryptedText);
-
-    // 输出结果
-    qDebug() << "Decrypted text:" << decryptedString;
-};
 
 int main(int argc, char *argv[])
 {
@@ -130,10 +83,9 @@ int main(int argc, char *argv[])
     SetProcessDPIAware();
     streamer.init();
     QApplication app(argc, argv);
-    test_aes1();
-//    auto api = ApiServer();
-//    auto test = MainFrame();
-//    test.show();
+    auto api = ApiServer();
+    auto test = MainFrame();
+    test.show();
     QApplication::exec();
     return 0;
 }

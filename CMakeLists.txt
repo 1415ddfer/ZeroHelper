@@ -38,7 +38,7 @@ file(GLOB_RECURSE SRCS
         )
 
 #添加额外的 源文件 例如资源文件等
-LIST(APPEND  SRCS qt.conf)
+#LIST(APPEND  SRCS qt.conf)
 LIST(APPEND  SRCS res.qrc)
 LIST(APPEND  SRCS res.rc)
 

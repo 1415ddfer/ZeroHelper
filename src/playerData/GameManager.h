@@ -40,7 +40,7 @@ public slots:
 public:
     explicit GameManager();
     ~GameManager() override;
-    bool createGame(AccData* acc);
+    bool createGame(AccData *acc);
     GameInfo* getInfo(AccData* acc);
     bool counterInfo(AccData* acc);
     void closeGame(AccData* acc);

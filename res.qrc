@@ -15,6 +15,13 @@
     <file>res/4.png</file>
     <file>res/5.png</file>
   </qresource>
+  <qresource prefix="rule">
+    <file>res/RulePic/0.png</file>
+    <file>res/RulePic/1.png</file>
+    <file>res/RulePic/2.png</file>
+    <file>res/RulePic/3.png</file>
+    <file>res/RulePic/4.png</file>
+  </qresource>
   <qresource prefix="data">
     <file>res/defaultUserData.json</file>
   </qresource>

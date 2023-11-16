@@ -18,11 +18,13 @@ void TextDataStreamer::init() {
         QJsonParseError jsonError{};
         data = QJsonDocument(QJsonDocument::fromJson(buffers, &jsonError));
         if (jsonError.error == QJsonParseError::NoError) {
+            hasLocData = true;
             return;
         }
         qDebug() << "open data json error!" << jsonError.errorString();
     }
     qDebug() << "try to load default data.";
+    hasLocData = false;
     auto defile = QFile(defaultConfig.defaultData);
     if(!defile.open(QIODevice::ReadOnly)){
         qDebug() << "could't open defaultData";
@@ -70,6 +72,7 @@ void TextDataStreamer::setObj(QJsonObject *obj) {
     stream = qCompress(stream);
     file.write(stream);
     file.close();
+    hasLocData = true;
 }
 
 

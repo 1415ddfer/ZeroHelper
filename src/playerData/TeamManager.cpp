@@ -207,6 +207,10 @@ bool TeamManager::findMember(int index, const QString &name, AccData *acc) {
     return false;
 }
 
+bool TeamManager::hasLocData() {
+    return streamer.hasLocData;
+}
+
 //void TeamManager::updateTeam(int index, UpdateFun fun, void* data) {
 //    auto re = QJsonValue();
 //    steam->findValue("teamAcc", &re);

@@ -51,7 +51,7 @@ public:
     explicit TeamAdd(int id=-1);
 };
 
-class MemberEdit : public QWidget {
+class MemberEdit : public QDialog{
 Q_OBJECT
     QGridLayout mLayout;
     QLabel sidLabel;
@@ -67,6 +67,7 @@ Q_OBJECT
     AccData *member;
 
     QPixmap background;
+    bool mActive;
     bool isAdd;
     int selfIndex;
     void paintEvent(QPaintEvent*) override;
@@ -76,13 +77,13 @@ Q_OBJECT
     void mousePressEvent(QMouseEvent  *e) override;
     void mouseReleaseEvent(QMouseEvent  *e) override;
     void mouseMoveEvent(QMouseEvent  *e) override;
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *) override;
 private slots:
 
     void onDone();
 public:
     ArtButton doneBTN;
-    explicit MemberEdit(AccData *acc= nullptr, int index=0);
-    void initDoneEvent();
+    explicit MemberEdit(QWidget *p, AccData *acc= nullptr, int index=0);
 };
 
 class MemberBtn : public QWidget {
@@ -120,7 +121,7 @@ class AccFrame : public QWidget {
     void contextMenuEvent(QContextMenuEvent *) override;
 private slots:
     void onEditTeam() const;
-    void onAddMember() const;
+    void onAddMember();
     static void onAddTeam();
     void onDelTeam();
 public:

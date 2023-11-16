@@ -30,6 +30,7 @@ extern DefaultConfig defaultConfig;
 ////typedef QMap<QString, TeamList> TeamMap;
 struct TextDataStreamer {
     QJsonDocument data;
+    bool hasLocData;
     void init();
     void findValue(const char *rootKey, QJsonValue *ret) const;
 //    void setValue(const char *rootKey, QJsonValue *value);

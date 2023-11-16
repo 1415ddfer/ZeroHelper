@@ -15,6 +15,8 @@
 #include "../playerData/TeamManager.h"
 #include "GameState.h"
 
+struct MathTable;
+
 class GameFrame : public QMainWindow{
     Q_OBJECT;
     AccData accData;
@@ -25,13 +27,16 @@ class GameFrame : public QMainWindow{
     ulong flashSaPid;
     QWidget *flashSaShadow;
     QWindow *flashSa;
+    MathTable* mathTable;
     QFuture<HWND> future;
     QFutureWatcher<HWND> watcher;
 //    QPixmap background;
 //    void paintEvent(QPaintEvent*) override;
     void closeEvent(QCloseEvent* e) override;
+    void moveEvent(QMoveEvent* e) override;
 
     void resizeGame(int w, int h);
+    void ruleManage();
 
     HWND loginGame();
 signals:

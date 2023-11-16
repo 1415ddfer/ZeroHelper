@@ -5,6 +5,7 @@
 #include "AccFrame.h"
 #include "../playerData/GameManager.h"
 #include <utility>
+#include <windows.h>
 
 AccFrame::AccFrame(QWidget *p) :
         mLayout(this),
@@ -116,11 +117,10 @@ void AccFrame::onEditTeam() const {
     edit->show();
 }
 
-void AccFrame::onAddMember() const {
-    auto edit = new MemberEdit(nullptr, selfIndex);
-    connect(&edit->doneBTN, &QPushButton::clicked, this, &AccFrame::reloadTeam);
-    edit->initDoneEvent();
-    edit->show();
+void AccFrame::onAddMember() {
+    auto edit = new MemberEdit(this, nullptr, selfIndex);
+    edit->exec();
+    reloadTeam();
 }
 
 void AccFrame::onAddTeam() {
@@ -198,10 +198,9 @@ void MemberBtn::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 void MemberBtn::onEdit() {
-    auto editBox = new MemberEdit(&member);
-    connect(&editBox->doneBTN, &QPushButton::clicked, this, &MemberBtn::onEditDone);
-    editBox->initDoneEvent();
-    editBox->show();
+    auto editBox = new MemberEdit(this, &member);
+    editBox->exec();
+    onEditDone();
 }
 
 void MemberBtn::onDel() {
@@ -221,6 +220,7 @@ void MemberBtn::onEditDone() {
 }
 
 void MemberBtn::doLogin() {
+    judgeMessage(TeamManager::hasLocData(), "请先配置账号数据!\n提示：右键头像可编辑账号，右键窗口可编辑队伍")
     auto info = gameManager.getInfo(&member);
     if(info!= nullptr){
         auto messageBox = QMessageBox(this);
@@ -251,7 +251,9 @@ void MemberBtn::mouseReleaseEvent(QMouseEvent *e) {
     doLogin();
 }
 
-MemberEdit::MemberEdit(AccData *acc, int index) :
+MemberEdit::MemberEdit(QWidget *p, AccData *acc, int index) :
+        QDialog(p),
+        mActive(true),
         mLayout(this),
         sidLabel(this),
         sidEdit(this),
@@ -263,7 +265,7 @@ MemberEdit::MemberEdit(AccData *acc, int index) :
         nickEdit(this),
         serverBox(this, "请选择服务器"),
         doneBTN(QIcon(":/button/res/25.png"), this),
-        closeBtn(QIcon(":/button/res/btn_close1.png"), this) {
+        closeBtn(QIcon(":/button/res/btn_close1.png"), this){
     background = QPixmap(":/background/res/2.png");
     if (acc == nullptr) {
         member = new AccData{};
@@ -326,28 +328,43 @@ MemberEdit::MemberEdit(AccData *acc, int index) :
     nickEdit.setText(member->nickName);
 }
 
-void MemberEdit::initDoneEvent() {
-    connect(&doneBTN, &QPushButton::clicked, this, &QWidget::close);
-    connect(&closeBtn, &QPushButton::clicked, this, &QWidget::close);
-}
-
 void MemberEdit::onDone() {
     QString username = userEdit.text(), pwd = pwdEdit.text();
     judgeMessage(username!= nullptr and pwd != nullptr, "用户名或密码不能为空")
     judgeMessage(!serverBox.showHint, "请选择服务器")
     *member = AccData{serverBox.currentIndex(), userEdit.text(), pwdEdit.text(), nickEdit.text(), sidEdit.text()};
     if (isAdd) TeamManager::addMember(selfIndex, *member);
+    close();
 }
 
 void MemberEdit::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     painter.drawPixmap(rect(), background, QRect());
+    if(!mActive){
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(255, 255, 255, 60));
+        painter.drawRect(rect());
+    }
+}
+
+bool MemberEdit::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+{
+#ifdef Q_OS_WIN
+    MSG* msg = (MSG*)message;
+
+    if(msg->message == WM_NCACTIVATE && (HWND)this->winId() == msg->hwnd ){
+        mActive = msg->wParam;
+        this->update();
+    }
+
+#endif
+
+    return QDialog::nativeEvent(eventType, message, result);
 }
 
 void MemberEdit::closeEvent(QCloseEvent *event) {
-    QWidget::closeEvent(event);
     if (isAdd) delete member;
-    delete this;
+    QDialog::closeEvent(event);
 }
 
 void MemberEdit::mouseReleaseEvent(QMouseEvent *e) {
