@@ -186,10 +186,10 @@ void GameFrame::toNormalSize() {
 }
 
 void GameFrame::toMiniSize() {
-    resizeGame(500, 300);
     if (!flashSa) return;
     auto hwnd = (HWND)flashSa->winId();
     SendMessage(hwnd, WM_COMMAND, 20034, 0);
+    resizeGame(500, 300);
 }
 
 void GameFrame::moveEvent(QMoveEvent *e) {
