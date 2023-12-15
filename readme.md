@@ -4,6 +4,10 @@ a local launcher of DDTank without install FlashPlayer
 
 一个无需安装flash player就可以游玩弹弹堂的本地启动器
 
+当游戏因为你的文本缩放而出现黑边时请尝试以下办法↓
+
+![黑边解决方法](MDResources/1.png)
+
 ## Auto Api 脚本接口
 
 when the program is running, use http://127.0.0.1/7233/nickName/{your_account_nickName}/start
