@@ -20,14 +20,22 @@ class GameInfo : public QObject{
 Q_OBJECT;
     unsigned long long hwnd;
     GameState state;
+    bool isMiniSize;
     QReadWriteLock *mutex; // 用于线程安全的互斥锁
+signals:
+    void toMiniSize();
+    void toNormalSize();
+    void closeGame();
 public slots:
     void setWId(unsigned long long newWid);
     void setState(GameState newState);
+    void setSizeState(bool isMini);
 public:
     explicit GameInfo(QReadWriteLock *);
     unsigned long long getWId();
     GameState  getGameState();
+    bool changeGameToMiniSize();
+    bool changeGameToNormalSize();
 };
 
 class GameManager : QObject{

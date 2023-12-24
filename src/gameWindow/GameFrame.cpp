@@ -22,6 +22,7 @@ GameFrame::GameFrame(AccData *d) :
         mWidget(this),
         mLayout(&mWidget),
         logBox(&mWidget) {
+    setWindowTitle(d->nickName);
     setCentralWidget(&mWidget);
     mLayout.setSpacing(0);
     mLayout.setContentsMargins(0, 0, 0, 0);
@@ -179,16 +180,20 @@ void GameFrame::takeFlash() {
 }
 
 void GameFrame::toNormalSize() {
+    if (flashSa) {
+        auto hwnd = (HWND)flashSa->winId();
+        SendMessage(hwnd, WM_COMMAND, 20046, 0);
+        emit updateSizeState(false);
+    }
     resizeGame(1000, 600);
-    if (!flashSa) return;
-    auto hwnd = (HWND)flashSa->winId();
-    SendMessage(hwnd, WM_COMMAND, 20046, 0);
 }
 
 void GameFrame::toMiniSize() {
-    if (!flashSa) return;
-    auto hwnd = (HWND)flashSa->winId();
-    SendMessage(hwnd, WM_COMMAND, 20034, 0);
+    if (flashSa){
+        auto hwnd = (HWND)flashSa->winId();
+        SendMessage(hwnd, WM_COMMAND, 20034, 0);
+        emit updateSizeState(true);
+    }
     resizeGame(500, 300);
 }
 
@@ -209,5 +214,9 @@ void GameFrame::ruleManage() {
     mathTable = new MathTable();
     auto pos0 = this->frameGeometry();
     mathTable->move(pos0.x(), pos0.y(), pos0.height(), pos0.width());
+}
+
+void GameFrame::toCloseGame() {
+    close();
 }
 

@@ -18,6 +18,10 @@ bool GameManager::createGame(AccData *acc) {
         auto info = new GameInfo(&mutex);
         connect(game, SIGNAL(updateState(GameState)), info, SLOT(setState(GameState)));
         connect(game, SIGNAL(updateWId(unsigned long long)), info, SLOT(setWId(unsigned long long)));
+        connect(game, SIGNAL(updateSizeState(bool)), info, SLOT(setSizeState(bool)));
+        connect(info, SIGNAL(toMiniSize()), game, SLOT(toMiniSize()));
+        connect(info, SIGNAL(toNormalSize()), game, SLOT(toNormalSize()));
+        connect(info, SIGNAL(closeGame()), game, SLOT(toCloseGame()));
         infos.insert(key, info);
         game->show();
         result = true;
@@ -124,4 +128,27 @@ GameInfo::GameInfo(QReadWriteLock *m) {
     mutex = m;
     hwnd = 0;
     state = OnClosed;
+    isMiniSize = false;
+}
+
+bool GameInfo::changeGameToMiniSize() {
+    if (!isMiniSize){
+        emit toMiniSize();
+        return true;
+    }
+    return false;
+}
+
+void GameInfo::setSizeState(bool isMini) {
+    mutex->lockForWrite();
+    isMiniSize = isMini;
+    mutex->unlock();
+}
+
+bool GameInfo::changeGameToNormalSize() {
+    if (isMiniSize){
+        emit toNormalSize();
+        return true;
+    }
+    return false;
 }

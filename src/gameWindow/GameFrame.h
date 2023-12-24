@@ -43,10 +43,12 @@ signals:
     void freeGame(AccData*);
     void updateWId(unsigned long long);
     void updateState(GameState);
+    void updateSizeState(bool);
 private slots:
     void takeFlash();
     void toNormalSize();
     void toMiniSize();
+    void toCloseGame();
 public:
     explicit GameFrame(AccData*);
 };

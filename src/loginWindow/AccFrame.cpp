@@ -332,7 +332,11 @@ void MemberEdit::onDone() {
     QString username = userEdit.text(), pwd = pwdEdit.text();
     judgeMessage(username!= nullptr and pwd != nullptr, "用户名或密码不能为空")
     judgeMessage(!serverBox.showHint, "请选择服务器")
-    *member = AccData{serverBox.currentIndex(), userEdit.text(), pwdEdit.text(), nickEdit.text(), sidEdit.text()};
+    auto nick = nickEdit.text();
+    if(nick.isEmpty()){
+        nick = userEdit.text().left(3); // 取前3位为昵称
+    }
+    *member = AccData{serverBox.currentIndex(), userEdit.text(), pwdEdit.text(), nick, sidEdit.text()};
     if (isAdd) TeamManager::addMember(selfIndex, *member);
     close();
 }
